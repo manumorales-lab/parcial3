@@ -1,6 +1,7 @@
 package co.edu.poli.parcial.servicios;
 
 import co.edu.poli.parcial.model.Producto;
+import java.util.List;
 
 public interface OperacionCRUD {
     boolean crearProducto(Producto producto);
@@ -8,5 +9,7 @@ public interface OperacionCRUD {
     boolean actualizarProducto(Producto producto);
     boolean eliminarProducto(int codigo);
     boolean serializarProducto(String archivo);
-    Producto deserializarProducto(String archivo);
+    boolean deserializarProducto(String archivo); // Cambiado a boolean
+    List<Producto> getTodosLosProductos(); // Añadido
+    int getContador(); // Añadido
 }

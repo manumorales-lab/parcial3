@@ -16,7 +16,9 @@ public class ImplementacionCRUD implements OperacionCRUD {
 
     @Override
     public boolean crearProducto(Producto producto) {
-        if (producto == null) return false;
+        if (producto == null || existeProducto(producto.getCodigo())) {
+            return false;
+        }
         productos.add(producto);
         contador++;
         return true;
@@ -24,19 +26,16 @@ public class ImplementacionCRUD implements OperacionCRUD {
 
     @Override
     public Producto leerProducto(int codigo) {
-        for (Producto producto : productos) {
-            if (producto.getCodigo() == codigo) {
-                return producto;
-            }
-        }
-        return null;
+        return productos.stream()
+                .filter(p -> p.getCodigo() == codigo)
+                .findFirst()
+                .orElse(null);
     }
 
     @Override
     public boolean actualizarProducto(Producto productoActualizado) {
         for (int i = 0; i < productos.size(); i++) {
-            Producto producto = productos.get(i);
-            if (producto.getCodigo() == productoActualizado.getCodigo()) {
+            if (productos.get(i).getCodigo() == productoActualizado.getCodigo()) {
                 productos.set(i, productoActualizado);
                 return true;
             }
@@ -46,49 +45,66 @@ public class ImplementacionCRUD implements OperacionCRUD {
 
     @Override
     public boolean eliminarProducto(int codigo) {
-        for (int i = 0; i < productos.size(); i++) {
-            Producto producto = productos.get(i);
-            if (producto.getCodigo() == codigo) {
-                productos.remove(i);
-                contador--;
-                return true;
-            }
+        boolean removed = productos.removeIf(p -> p.getCodigo() == codigo);
+        if (removed) {
+            contador--;
         }
-        return false;
+        return removed;
     }
 
     @Override
     public boolean serializarProducto(String archivo) {
         try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(archivo))) {
             oos.writeObject(productos);
+            System.out.println("Productos serializados correctamente en: " + archivo);
+            System.out.println("Total de productos guardados: " + productos.size());
             return true;
         } catch (IOException e) {
-            e.printStackTrace();
+            System.err.println("Error al serializar: " + e.getMessage());
             return false;
         }
     }
 
     @Override
-    public Producto deserializarProducto(String archivo) {
+    public boolean deserializarProducto(String archivo) {
         try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(archivo))) {
+            @SuppressWarnings("unchecked")
             List<Producto> productosDeserializados = (List<Producto>) ois.readObject();
-            if (!productosDeserializados.isEmpty()) {
-                // Reemplazar la lista actual con la deserializada
-                this.productos = productosDeserializados;
+            
+            if (productosDeserializados != null) {
+                // Limpiar la lista actual y agregar los productos deserializados
+                this.productos.clear();
+                this.productos.addAll(productosDeserializados);
                 this.contador = productos.size();
-                return productos.get(0); // Retornar el primer producto como ejemplo
+                
+                System.out.println("Productos deserializados correctamente desde: " + archivo);
+                System.out.println("Total de productos cargados: " + productos.size());
+                
+                // Mostrar información de los productos cargados
+                for (int i = 0; i < productos.size(); i++) {
+                    Producto p = productos.get(i);
+                    System.out.println("Producto " + (i + 1) + ": " + p.getNombre() + " (Código: " + p.getCodigo() + ")");
+                }
+                
+                return true;
             }
         } catch (IOException | ClassNotFoundException e) {
-            e.printStackTrace();
+            System.err.println("Error al deserializar: " + e.getMessage());
         }
-        return null;
+        return false;
     }
 
-    // Métodos adicionales para la interfaz gráfica
+    @Override
+    public List<Producto> getTodosLosProductos() {
+        return new ArrayList<>(productos);
+    }
+
+    @Override
     public int getContador() {
         return contador;
     }
 
+    // Métodos adicionales para funcionalidad interna
     public boolean existeProducto(int codigo) {
         return leerProducto(codigo) != null;
     }
@@ -100,7 +116,8 @@ public class ImplementacionCRUD implements OperacionCRUD {
         return null;
     }
 
-    public List<Producto> getTodosLosProductos() {
-        return new ArrayList<>(productos);
+    // Método para verificar si un archivo existe
+    public boolean archivoExiste(String archivo) {
+        return new File(archivo).exists();
     }
 }

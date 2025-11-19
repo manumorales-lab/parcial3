@@ -10,15 +10,11 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.geometry.Insets;
 import javafx.collections.FXCollections;
-import co.edu.poli.parcial.servicios.ImplementacionCRUD;
-import co.edu.poli.parcial.servicios.OperacionCRUD;
-import co.edu.poli.parcial.model.Producto;
-import co.edu.poli.parcial.model.Proveedor;
-import co.edu.poli.parcial.model.Electronico;
-import co.edu.poli.parcial.model.Ropa;
-
+import co.edu.poli.parcial.model.*;
+import co.edu.poli.parcial.servicios.*;
 import java.util.List;
 import java.util.ArrayList;
+import java.io.File;
 
 public class PrimaryController {
     
@@ -66,7 +62,7 @@ public class PrimaryController {
     }
     
     private void actualizarInformacion() {
-        int total = ((ImplementacionCRUD) operacionCRUD).getContador();
+        int total = operacionCRUD.getContador();
         lblTotalProductos.setText(String.valueOf(total));
     }
     
@@ -128,7 +124,7 @@ public class PrimaryController {
     private void serializar() {
         TextInputDialog dialog = new TextInputDialog("productos.dat");
         dialog.setTitle("Serializar Datos");
-        dialog.setHeaderText("Serializar Productos");
+        dialog.setHeaderText("Guardar Productos en Archivo");
         dialog.setContentText("Nombre del archivo:");
         
         dialog.showAndWait().ifPresent(archivo -> {
@@ -138,7 +134,11 @@ public class PrimaryController {
             
             if (operacionCRUD.serializarProducto(archivo)) {
                 lblUltimaAccion.setText("Serializar Datos - Éxito");
-                mostrarAlerta("Éxito", "Datos serializados exitosamente en " + archivo, Alert.AlertType.INFORMATION);
+                mostrarAlerta("Éxito", 
+                    "Datos serializados exitosamente en: " + archivo + 
+                    "\nTotal de productos guardados: " + operacionCRUD.getContador(), 
+                    Alert.AlertType.INFORMATION);
+                actualizarInformacion();
             } else {
                 mostrarAlerta("Error", "Error al serializar los datos", Alert.AlertType.ERROR);
             }
@@ -149,7 +149,7 @@ public class PrimaryController {
     private void deserializar() {
         TextInputDialog dialog = new TextInputDialog("productos.dat");
         dialog.setTitle("Deserializar Datos");
-        dialog.setHeaderText("Deserializar Productos");
+        dialog.setHeaderText("Cargar Productos desde Archivo");
         dialog.setContentText("Nombre del archivo:");
         
         dialog.showAndWait().ifPresent(archivo -> {
@@ -158,17 +158,34 @@ public class PrimaryController {
             }
             
             // Verificar si el archivo existe
-            java.io.File file = new java.io.File(archivo);
+            File file = new File(archivo);
             if (!file.exists()) {
                 mostrarAlerta("Error", "El archivo " + archivo + " no existe", Alert.AlertType.ERROR);
                 return;
             }
             
-            Producto producto = operacionCRUD.deserializarProducto(archivo);
-            if (producto != null) {
+            if (operacionCRUD.deserializarProducto(archivo)) {
                 lblUltimaAccion.setText("Deserializar Datos - Éxito");
                 actualizarInformacion();
-                mostrarAlerta("Éxito", "Datos deserializados exitosamente\nPrimer producto: " + producto.getNombre(), Alert.AlertType.INFORMATION);
+                
+                // Mostrar información de los productos cargados
+                List<Producto> productosCargados = operacionCRUD.getTodosLosProductos();
+                StringBuilder mensaje = new StringBuilder();
+                mensaje.append("Datos deserializados exitosamente desde: ").append(archivo).append("\n");
+                mensaje.append("Total de productos cargados: ").append(productosCargados.size()).append("\n\n");
+                
+                if (!productosCargados.isEmpty()) {
+                    mensaje.append("Productos cargados:\n");
+                    for (int i = 0; i < Math.min(productosCargados.size(), 5); i++) {
+                        Producto p = productosCargados.get(i);
+                        mensaje.append("- ").append(p.getNombre()).append(" (Código: ").append(p.getCodigo()).append(")\n");
+                    }
+                    if (productosCargados.size() > 5) {
+                        mensaje.append("... y ").append(productosCargados.size() - 5).append(" más");
+                    }
+                }
+                
+                mostrarAlerta("Éxito", mensaje.toString(), Alert.AlertType.INFORMATION);
             } else {
                 mostrarAlerta("Error", "Error al deserializar los datos", Alert.AlertType.ERROR);
             }
@@ -203,15 +220,19 @@ public class PrimaryController {
         // Campos del formulario
         Label lblCodigo = new Label("Código:");
         TextField txtCodigo = new TextField();
+        txtCodigo.setPromptText("Ingrese código numérico...");
         
         Label lblNombre = new Label("Nombre:");
         TextField txtNombre = new TextField();
+        txtNombre.setPromptText("Ingrese nombre del producto...");
         
         Label lblPrecio = new Label("Precio:");
         TextField txtPrecio = new TextField();
+        txtPrecio.setPromptText("Ingrese precio...");
         
         Label lblStock = new Label("Stock:");
         TextField txtStock = new TextField();
+        txtStock.setPromptText("Ingrese cantidad en stock...");
         
         Label lblProveedor = new Label("Proveedor:");
         ComboBox<Proveedor> cmbProveedor = new ComboBox<>();
@@ -227,6 +248,7 @@ public class PrimaryController {
                 return null;
             }
         });
+        cmbProveedor.setPromptText("Seleccione un proveedor...");
         
         Label lblTipo = new Label("Tipo de Producto:");
         ToggleGroup tipoGroup = new ToggleGroup();
@@ -238,12 +260,14 @@ public class PrimaryController {
         
         Label lblGarantia = new Label("Garantía (meses):");
         TextField txtGarantia = new TextField();
+        txtGarantia.setPromptText("Ingrese meses de garantía...");
         lblGarantia.setVisible(false);
         txtGarantia.setVisible(false);
         
         Label lblTalla = new Label("Talla:");
         ComboBox<String> cmbTalla = new ComboBox<>();
         cmbTalla.setItems(FXCollections.observableArrayList("S", "M", "L", "XL"));
+        cmbTalla.setPromptText("Seleccione talla...");
         lblTalla.setVisible(false);
         cmbTalla.setVisible(false);
         
@@ -307,7 +331,7 @@ public class PrimaryController {
                 Proveedor proveedor = cmbProveedor.getValue();
                 
                 // Verificar si ya existe el producto
-                if (((ImplementacionCRUD) operacionCRUD).existeProducto(codigo)) {
+                if (operacionCRUD.leerProducto(codigo) != null) {
                     mostrarAlerta("Error", "Ya existe un producto con ese código", Alert.AlertType.ERROR);
                     return;
                 }
@@ -357,21 +381,21 @@ public class PrimaryController {
         Label titulo = new Label("Lista de Productos");
         titulo.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;");
         
-        ImplementacionCRUD impl = (ImplementacionCRUD) operacionCRUD;
-        int totalProductos = impl.getContador();
+        int totalProductos = operacionCRUD.getContador();
         
         Label lblTotal = new Label("Total de productos: " + totalProductos);
-        lblTotal.setStyle("-fx-font-weight: bold; -fx-text-fill: #27ae60;");
+        lblTotal.setStyle("-fx-font-weight: bold; -fx-text-fill: #27ae60; -fx-font-size: 16px;");
         
         VBox listaProductos = new VBox(10);
         
         if (totalProductos == 0) {
             Label lblVacio = new Label("No hay productos registrados");
-            lblVacio.setStyle("-fx-text-fill: #7f8c8d; -fx-font-style: italic;");
+            lblVacio.setStyle("-fx-text-fill: #7f8c8d; -fx-font-style: italic; -fx-font-size: 14px;");
             listaProductos.getChildren().add(lblVacio);
         } else {
-            for (int i = 0; i < totalProductos; i++) {
-                Producto producto = impl.obtenerProductoPorIndice(i);
+            List<Producto> todosProductos = operacionCRUD.getTodosLosProductos();
+            for (int i = 0; i < todosProductos.size(); i++) {
+                Producto producto = todosProductos.get(i);
                 if (producto != null) {
                     VBox card = crearCardProducto(producto, i + 1);
                     listaProductos.getChildren().add(card);
@@ -389,11 +413,11 @@ public class PrimaryController {
         card.setStyle("-fx-background-color: #ffffff; -fx-border-color: #bdc3c7; -fx-border-width: 1; -fx-border-radius: 5;");
         
         Label lblNumero = new Label("Producto #" + numero);
-        lblNumero.setStyle("-fx-font-weight: bold; -fx-text-fill: #2c3e50;");
+        lblNumero.setStyle("-fx-font-weight: bold; -fx-text-fill: #2c3e50; -fx-font-size: 16px;");
         
         Label lblCodigo = new Label("Código: " + producto.getCodigo());
         Label lblNombre = new Label("Nombre: " + producto.getNombre());
-        Label lblPrecio = new Label("Precio: $" + producto.getPrecio());
+        Label lblPrecio = new Label("Precio: $" + String.format("%.2f", producto.getPrecio()));
         Label lblStock = new Label("Stock: " + producto.getStock());
         Label lblProveedor = new Label("Proveedor: " + producto.getProveedor().getNombre());
         Label lblTipo = new Label("Tipo: " + producto.getTipo());
@@ -401,12 +425,12 @@ public class PrimaryController {
         VBox detallesEspecificos = new VBox(5);
         if (producto.getElectronico() != null) {
             Label lblGarantia = new Label("Garantía: " + producto.getElectronico().getGarantiaMeses() + " meses");
-            lblGarantia.setStyle("-fx-text-fill: #e67e22;");
+            lblGarantia.setStyle("-fx-text-fill: #e67e22; -fx-font-weight: bold;");
             detallesEspecificos.getChildren().add(lblGarantia);
         }
         if (producto.getRopa() != null) {
             Label lblTalla = new Label("Talla: " + producto.getRopa().getTalla());
-            lblTalla.setStyle("-fx-text-fill: #9b59b6;");
+            lblTalla.setStyle("-fx-text-fill: #9b59b6; -fx-font-weight: bold;");
             detallesEspecificos.getChildren().add(lblTalla);
         }
         
@@ -424,17 +448,23 @@ public class PrimaryController {
         HBox busquedaBox = new HBox(10);
         Label lblCodigo = new Label("Código del producto:");
         TextField txtCodigo = new TextField();
+        txtCodigo.setPromptText("Ingrese el código...");
         Button btnBuscar = new Button("Buscar");
         btnBuscar.setStyle("-fx-background-color: #007bff; -fx-text-fill: white;");
         
         busquedaBox.getChildren().addAll(lblCodigo, txtCodigo, btnBuscar);
         
         VBox resultado = new VBox(10);
-        resultado.setPadding(new Insets(10));
+        resultado.setPadding(new Insets(15));
         resultado.setVisible(false);
         
         btnBuscar.setOnAction(e -> {
             try {
+                if (txtCodigo.getText().isEmpty()) {
+                    mostrarAlerta("Error", "Por favor ingrese un código", Alert.AlertType.ERROR);
+                    return;
+                }
+                
                 int codigo = Integer.parseInt(txtCodigo.getText());
                 Producto producto = operacionCRUD.leerProducto(codigo);
                 
@@ -442,18 +472,31 @@ public class PrimaryController {
                 resultado.setVisible(true);
                 
                 if (producto != null) {
-                    resultado.setStyle("-fx-background-color: #d4edda; -fx-border-color: #c3e6cb; -fx-border-width: 1;");
-                    resultado.getChildren().add(crearCardProducto(producto, 1));
+                    resultado.setStyle("-fx-background-color: #d4edda; -fx-border-color: #c3e6cb; -fx-border-width: 2; -fx-border-radius: 5;");
+                    
+                    Label lblEncontrado = new Label("✅ Producto encontrado:");
+                    lblEncontrado.setStyle("-fx-font-weight: bold; -fx-text-fill: #155724;");
+                    
+                    VBox card = crearCardProducto(producto, 1);
+                    
+                    resultado.getChildren().addAll(lblEncontrado, card);
                 } else {
-                    resultado.setStyle("-fx-background-color: #f8d7da; -fx-border-color: #f5c6cb; -fx-border-width: 1;");
-                    Label lblError = new Label("Producto no encontrado");
-                    lblError.setStyle("-fx-text-fill: #721c24;");
-                    resultado.getChildren().add(lblError);
+                    resultado.setStyle("-fx-background-color: #f8d7da; -fx-border-color: #f5c6cb; -fx-border-width: 2; -fx-border-radius: 5;");
+                    Label lblError = new Label("❌ Producto no encontrado");
+                    lblError.setStyle("-fx-text-fill: #721c24; -fx-font-weight: bold;");
+                    
+                    Label lblSugerencia = new Label("El producto con código " + codigo + " no existe en la base de datos.");
+                    lblSugerencia.setStyle("-fx-text-fill: #721c24;");
+                    
+                    resultado.getChildren().addAll(lblError, lblSugerencia);
                 }
             } catch (NumberFormatException ex) {
-                mostrarAlerta("Error", "Por favor ingrese un código válido", Alert.AlertType.ERROR);
+                mostrarAlerta("Error", "Por favor ingrese un código válido (número entero)", Alert.AlertType.ERROR);
             }
         });
+        
+        // Enter key support
+        txtCodigo.setOnAction(e -> btnBuscar.fire());
         
         formulario.getChildren().addAll(titulo, busquedaBox, resultado);
         return formulario;
@@ -469,6 +512,7 @@ public class PrimaryController {
         HBox busquedaBox = new HBox(10);
         Label lblCodigo = new Label("Código del producto:");
         TextField txtCodigo = new TextField();
+        txtCodigo.setPromptText("Ingrese el código...");
         Button btnBuscar = new Button("Buscar");
         btnBuscar.setStyle("-fx-background-color: #ffc107; -fx-text-fill: white;");
         
@@ -567,6 +611,7 @@ public class PrimaryController {
         HBox busquedaBox = new HBox(10);
         Label lblCodigo = new Label("Código del producto:");
         TextField txtCodigo = new TextField();
+        txtCodigo.setPromptText("Ingrese el código...");
         Button btnBuscar = new Button("Buscar");
         btnBuscar.setStyle("-fx-background-color: #dc3545; -fx-text-fill: white;");
         
