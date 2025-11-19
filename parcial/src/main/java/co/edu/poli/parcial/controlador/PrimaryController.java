@@ -1,8 +1,6 @@
-package co.edu.poli.parcial.vista;
+package co.edu.poli.parcial.controlador;
 
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import javafx.scene.layout.StackPane;
@@ -10,8 +8,11 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.geometry.Insets;
 import javafx.collections.FXCollections;
+import javafx.application.Platform;
 import co.edu.poli.parcial.model.*;
 import co.edu.poli.parcial.servicios.*;
+
+
 import java.util.List;
 import java.util.ArrayList;
 import java.io.File;
@@ -44,12 +45,17 @@ public class PrimaryController {
     
     private OperacionCRUD operacionCRUD;
     private Proveedor[] proveedores;
+    private static final String ARCHIVO_DATOS = "productos.dat";
     
     public void initialize() {
         operacionCRUD = new ImplementacionCRUD();
         inicializarProveedores();
+        cargarDatosAutomaticamente();
         actualizarInformacion();
         mostrarMenuPrincipal();
+        
+        // Configurar el cierre de la aplicación para guardar automáticamente
+        configurarCierreAplicacion();
     }
     
     private void inicializarProveedores() {
@@ -59,6 +65,56 @@ public class PrimaryController {
             new Proveedor(3, "Japon", "TechWorld"),
             new Proveedor(4, "Colombia", "NataStyle")
         };
+    }
+    
+    /**
+     * Carga los datos automáticamente al iniciar la aplicación
+     */
+    private void cargarDatosAutomaticamente() {
+        File archivo = new File(ARCHIVO_DATOS);
+        if (archivo.exists()) {
+            System.out.println("Cargando datos automáticamente desde: " + ARCHIVO_DATOS);
+            if (operacionCRUD.deserializarProducto(ARCHIVO_DATOS)) {
+                int totalProductos = operacionCRUD.getContador();
+                System.out.println("Datos cargados exitosamente. Total de productos: " + totalProductos);
+                
+                // Mostrar información de los productos cargados en consola
+                List<Producto> productosCargados = operacionCRUD.getTodosLosProductos();
+                for (Producto producto : productosCargados) {
+                    System.out.println(" - " + producto.getNombre() + " (Código: " + producto.getCodigo() + ")");
+                }
+            } else {
+                System.out.println("Error al cargar los datos automáticamente");
+            }
+        } else {
+            System.out.println("No se encontró archivo de datos. Se iniciará con lista vacía.");
+        }
+    }
+    
+    /**
+     * Configura el guardado automático al cerrar la aplicación
+     */
+    private void configurarCierreAplicacion() {
+        Platform.runLater(() -> {
+            // Obtener la ventana actual y agregar listener de cierre
+            btnVolver.getScene().getWindow().setOnCloseRequest(event -> {
+                guardarDatosAutomaticamente();
+            });
+        });
+    }
+    
+    /**
+     * Guarda los datos automáticamente antes de cerrar
+     */
+    private void guardarDatosAutomaticamente() {
+        System.out.println("Guardando datos automáticamente...");
+        if (operacionCRUD.serializarProducto(ARCHIVO_DATOS)) {
+            int totalProductos = operacionCRUD.getContador();
+            System.out.println("Datos guardados exitosamente en: " + ARCHIVO_DATOS);
+            System.out.println("Total de productos guardados: " + totalProductos);
+        } else {
+            System.out.println("Error al guardar los datos automáticamente");
+        }
     }
     
     private void actualizarInformacion() {
@@ -122,14 +178,14 @@ public class PrimaryController {
     
     @FXML
     private void serializar() {
-        TextInputDialog dialog = new TextInputDialog("productos.dat");
+        TextInputDialog dialog = new TextInputDialog(ARCHIVO_DATOS);
         dialog.setTitle("Serializar Datos");
         dialog.setHeaderText("Guardar Productos en Archivo");
         dialog.setContentText("Nombre del archivo:");
         
         dialog.showAndWait().ifPresent(archivo -> {
             if (archivo.isEmpty()) {
-                archivo = "productos.dat";
+                archivo = ARCHIVO_DATOS;
             }
             
             if (operacionCRUD.serializarProducto(archivo)) {
@@ -147,14 +203,14 @@ public class PrimaryController {
     
     @FXML
     private void deserializar() {
-        TextInputDialog dialog = new TextInputDialog("productos.dat");
+        TextInputDialog dialog = new TextInputDialog(ARCHIVO_DATOS);
         dialog.setTitle("Deserializar Datos");
         dialog.setHeaderText("Cargar Productos desde Archivo");
         dialog.setContentText("Nombre del archivo:");
         
         dialog.showAndWait().ifPresent(archivo -> {
             if (archivo.isEmpty()) {
-                archivo = "productos.dat";
+                archivo = ARCHIVO_DATOS;
             }
             
             // Verificar si el archivo existe
@@ -194,6 +250,8 @@ public class PrimaryController {
     
     @FXML
     private void salir() {
+        // Guardar datos antes de salir
+        guardarDatosAutomaticamente();
         System.exit(0);
     }
     
@@ -203,8 +261,11 @@ public class PrimaryController {
     }
     
     // ========== COMPONENTES DE LA INTERFAZ ==========
+    // [Los métodos restantes se mantienen igual que en la versión anterior]
+    // crearFormularioCrearProducto(), crearVistaListarProductos(), etc.
     
     private VBox crearFormularioCrearProducto() {
+        // [Mismo código que antes]
         VBox formulario = new VBox(15);
         formulario.setPadding(new Insets(20));
         formulario.setStyle("-fx-background-color: #f8f9fa; -fx-border-color: #dee2e6; -fx-border-width: 1;");

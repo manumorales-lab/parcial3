@@ -6,7 +6,7 @@
 
 <BorderPane xmlns="http://javafx.com/javafx/11.0.1" 
             xmlns:fx="http://javafx.com/fxml/1" 
-            fx:controller="co.edu.poli.parcial.vista.PrimaryController"
+            fx:controller="co.edu.poli.parcial.controlador.PrimaryController"
             prefHeight="700" 
             prefWidth="900"
             style="-fx-background-color: #ecf0f1;">

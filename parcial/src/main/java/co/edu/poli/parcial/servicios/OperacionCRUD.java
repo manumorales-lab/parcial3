@@ -9,7 +9,7 @@ public interface OperacionCRUD {
     boolean actualizarProducto(Producto producto);
     boolean eliminarProducto(int codigo);
     boolean serializarProducto(String archivo);
-    boolean deserializarProducto(String archivo); // Cambiado a boolean
-    List<Producto> getTodosLosProductos(); // Añadido
-    int getContador(); // Añadido
+    boolean deserializarProducto(String archivo);
+    List<Producto> getTodosLosProductos();
+    int getContador();
 }
