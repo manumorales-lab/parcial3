@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<BorderPane xmlns="http://javafx.com/javafx/11.0.1" 
+            xmlns:fx="http://javafx.com/fxml/1" 
+            fx:controller="co.edu.poli.parcial.vista.PrimaryController"
+            prefHeight="700" 
+            prefWidth="900"
+            style="-fx-background-color: #ecf0f1;">
+    
+    <top>
+        <VBox spacing="0" style="-fx-background-color: #2c3e50;">
+            <!-- Encabezado principal que cambia según la vista -->
+            <HBox spacing="10" alignment="CENTER_LEFT" 
+                  style="-fx-background-color: #34495e; -fx-padding: 15;">
+                <!-- Botón Volver (visible solo en vistas secundarias) -->
+                <Button fx:id="btnVolver" text="← Volver al Menú" 
+                        style="-fx-background-color: #95a5a6; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 15;"
+                        onAction="#volverAlMenuPrincipal"
+                        visible="false"
+                        managed="false"/>
+                
+                <Label fx:id="lblTitulo" text="Sistema de Gestión de Productos" 
+                       style="-fx-text-fill: white; -fx-font-size: 20px; -fx-font-weight: bold;"
+                       HBox.hgrow="ALWAYS"/>
+            </HBox>
+        </VBox>
+    </top>
+    
+    <center>
+        <!-- Contenedor principal que cambia entre menú y contenido específico -->
+        <StackPane fx:id="contenedorPrincipal">
+            
+            <!-- Vista del Menú Principal (por defecto) -->
+            <VBox fx:id="vistaMenuPrincipal" spacing="25" alignment="TOP_CENTER" 
+                  style="-fx-background-color: #ecf0f1;">
+                <padding>
+                    <Insets top="40" left="40" right="40" bottom="40"/>
+                </padding>
+                
+                <Label text="Menú Principal" 
+                       style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+                
+                <GridPane hgap="20" vgap="20" alignment="CENTER">
+                    <columnConstraints>
+                        <ColumnConstraints prefWidth="180"/>
+                        <ColumnConstraints prefWidth="180"/>
+                        <ColumnConstraints prefWidth="180"/>
+                        <ColumnConstraints prefWidth="180"/>
+                    </columnConstraints>
+                    
+                    <rowConstraints>
+                        <RowConstraints prefHeight="70"/>
+                        <RowConstraints prefHeight="70"/>
+                    </rowConstraints>
+                    
+                    <!-- Primera fila de botones -->
+                    <Button text="Crear Producto" 
+                            style="-fx-background-color: #3498db; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px; -fx-background-radius: 5;"
+                            onAction="#crearProducto"
+                            maxWidth="Infinity"
+                            maxHeight="Infinity"
+                            GridPane.columnIndex="0" GridPane.rowIndex="0">
+                        <padding>
+                            <Insets top="10" bottom="10" left="15" right="15"/>
+                        </padding>
+                    </Button>
+                    
+                    <Button text="Listar Productos" 
+                            style="-fx-background-color: #2ecc71; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px; -fx-background-radius: 5;"
+                            onAction="#listarProductos"
+                            maxWidth="Infinity"
+                            maxHeight="Infinity"
+                            GridPane.columnIndex="1" GridPane.rowIndex="0">
+                        <padding>
+                            <Insets top="10" bottom="10" left="15" right="15"/>
+                        </padding>
+                    </Button>
+                    
+                    <Button text="Actualizar Producto" 
+                            style="-fx-background-color: #f39c12; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px; -fx-background-radius: 5;"
+                            onAction="#actualizarProducto"
+                            maxWidth="Infinity"
+                            maxHeight="Infinity"
+                            GridPane.columnIndex="2" GridPane.rowIndex="0">
+                        <padding>
+                            <Insets top="10" bottom="10" left="15" right="15"/>
+                        </padding>
+                    </Button>
+                    
+                    <Button text="Eliminar Producto" 
+                            style="-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px; -fx-background-radius: 5;"
+                            onAction="#eliminarProducto"
+                            maxWidth="Infinity"
+                            maxHeight="Infinity"
+                            GridPane.columnIndex="3" GridPane.rowIndex="0">
+                        <padding>
+                            <Insets top="10" bottom="10" left="15" right="15"/>
+                        </padding>
+                    </Button>
+                    
+                    <!-- Segunda fila de botones -->
+                    <Button text="Buscar Producto" 
+                            style="-fx-background-color: #9b59b6; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px; -fx-background-radius: 5;"
+                            onAction="#buscarProducto"
+                            maxWidth="Infinity"
+                            maxHeight="Infinity"
+                            GridPane.columnIndex="0" GridPane.rowIndex="1">
+                        <padding>
+                            <Insets top="10" bottom="10" left="15" right="15"/>
+                        </padding>
+                    </Button>
+                    
+                    <Button text="Serializar" 
+                            style="-fx-background-color: #1abc9c; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px; -fx-background-radius: 5;"
+                            onAction="#serializar"
+                            maxWidth="Infinity"
+                            maxHeight="Infinity"
+                            GridPane.columnIndex="1" GridPane.rowIndex="1">
+                        <padding>
+                            <Insets top="10" bottom="10" left="15" right="15"/>
+                        </padding>
+                    </Button>
+                    
+                    <Button text="Deserializar" 
+                            style="-fx-background-color: #34495e; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px; -fx-background-radius: 5;"
+                            onAction="#deserializar"
+                            maxWidth="Infinity"
+                            maxHeight="Infinity"
+                            GridPane.columnIndex="2" GridPane.rowIndex="1">
+                        <padding>
+                            <Insets top="10" bottom="10" left="15" right="15"/>
+                        </padding>
+                    </Button>
+                    
+                    <Button text="Salir" 
+                            style="-fx-background-color: #7f8c8d; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px; -fx-background-radius: 5;"
+                            onAction="#salir"
+                            maxWidth="Infinity"
+                            maxHeight="Infinity"
+                            GridPane.columnIndex="3" GridPane.rowIndex="1">
+                        <padding>
+                            <Insets top="10" bottom="10" left="15" right="15"/>
+                        </padding>
+                    </Button>
+                </GridPane>
+                
+                <!-- Área de información -->
+                <VBox spacing="15" style="-fx-background-color: white; -fx-border-color: #bdc3c7; -fx-border-width: 2; -fx-border-radius: 8; -fx-padding: 20;">
+                    <Label text="Información del Sistema" 
+                           style="-fx-font-weight: bold; -fx-text-fill: #2c3e50; -fx-font-size: 16px;"/>
+                    
+                    <HBox spacing="40" alignment="CENTER_LEFT">
+                        <VBox spacing="8">
+                            <Label text="Total Productos Registrados:" style="-fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+                            <Label fx:id="lblTotalProductos" text="0" 
+                                   style="-fx-text-fill: #27ae60; -fx-font-size: 24px; -fx-font-weight: bold;"/>
+                        </VBox>
+                        
+                        <VBox spacing="8">
+                            <Label text="Última Acción Realizada:" style="-fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+                            <Label fx:id="lblUltimaAccion" text="Ninguna" 
+                                   style="-fx-text-fill: #2980b9; -fx-font-size: 16px; -fx-font-style: italic;"/>
+                        </VBox>
+                    </HBox>
+                </VBox>
+            </VBox>
+            
+            <!-- Vista de Contenido Secundario (oculta por defecto) -->
+            <ScrollPane fx:id="vistaContenido" fitToWidth="true" visible="false"
+                       style="-fx-background: #ecf0f1; -fx-border-color: transparent;">
+                <VBox fx:id="contenidoPrincipal" spacing="0" alignment="TOP_LEFT"
+                     style="-fx-background-color: #ecf0f1;">
+                    <padding>
+                        <Insets top="0" left="0" right="0" bottom="20"/>
+                    </padding>
+                    
+                    <!-- Mensaje inicial que se reemplazará con el contenido dinámico -->
+                    <VBox alignment="CENTER" spacing="20" 
+                          style="-fx-background-color: white; -fx-border-color: #bdc3c7; -fx-border-width: 1; -fx-padding: 40; -fx-margin: 20;">
+                        <Label text="👈 Seleccione una opción del menú para comenzar" 
+                               style="-fx-text-fill: #7f8c8d; -fx-font-style: italic; -fx-font-size: 16px;"/>
+                        <Label text="El contenido específico de cada operación aparecerá aquí" 
+                               style="-fx-text-fill: #95a5a6; -fx-font-size: 14px;"/>
+                    </VBox>
+                </VBox>
+            </ScrollPane>
+            
+        </StackPane>
+    </center>
+    
+    <bottom>
+        <HBox alignment="CENTER" style="-fx-background-color: #2c3e50; -fx-padding: 12;">
+            <Label text="© 2024 Politécnico Grancolombiano - Sistema de Gestión de Productos" 
+                   style="-fx-text-fill: #ecf0f1; -fx-font-size: 12px;"/>
+        </HBox>
+    </bottom>
+    
+</BorderPane>
